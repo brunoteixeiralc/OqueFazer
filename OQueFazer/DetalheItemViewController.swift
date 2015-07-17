@@ -1,5 +1,5 @@
 //
-//  AdicionarCheckListItemTableViewController.swift
+//  DetalheItemViewController.swift
 //  OQueFazer
 //
 //  Created by Bruno Corrêa on 15/05/15.
@@ -8,90 +8,85 @@
 
 import UIKit
 
-class AdicionarCheckListItemTableViewController: UITableViewController {
+protocol DetalheItemViewControllerDelegate: class{
+    func detalheItemViewControllerCancelou(controller:DetalheItemViewController)
+    func detalheItemViewController(controller:DetalheItemViewController, acabouDeAdicionar item:CheckListItem)
+    func detalheItemViewController(controller:DetalheItemViewController, acabouDeEditar item:CheckListItem)
+}
 
+class DetalheItemViewController: UITableViewController , UITextFieldDelegate{
+
+    @IBOutlet weak var campoTexto: UITextField!
+    
+    @IBOutlet weak var botaoConcluir: UIBarButtonItem!
+    
+    var itemEditar : CheckListItem?
+    
+    weak var delegate:DetalheItemViewControllerDelegate?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        
+        tableView.rowHeight = 44
+        
+        if let item = itemEditar{
+            
+            title = "Editar item"
+            
+            campoTexto.text = item.text
+            
+            botaoConcluir.enabled = true
+        }
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    
+    override func viewWillAppear(animated: Bool) {
+        
+        super.viewWillAppear(animated)
+        
+        campoTexto.becomeFirstResponder()
+        
     }
-
-    // MARK: - Table view data source
-
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        // #warning Potentially incomplete method implementation.
-        // Return the number of sections.
-        return 0
-    }
-
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete method implementation.
-        // Return the number of rows in the section.
-        return 0
-    }
-
-    /*
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("reuseIdentifier", forIndexPath: indexPath) as! UITableViewCell
-
-        // Configure the cell...
-
-        return cell
-    }
-    */
-
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return NO if you do not want the specified item to be editable.
+    
+    func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
+        
+        let oldText:NSString = textField.text
+        
+        let newText:NSString = oldText.stringByReplacingCharactersInRange(range, withString: string)
+        
+        botaoConcluir.enabled = newText.length>0
+        
         return true
     }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            // Delete the row from the data source
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-        } else if editingStyle == .Insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
+    
+    @IBAction func cancelar(){
+        
+        delegate?.detalheItemViewControllerCancelou(self)
     }
-    */
+    
+    @IBAction func concluir(){
+        
+        if let item = itemEditar{
+            
+            item.text = campoTexto.text
+            
+            delegate?.detalheItemViewController(self, acabouDeEditar: item)
+            
+        }else{
+            
+            let item = CheckListItem()
+            
+            item.text = campoTexto.text
+            
+            item.checked = false
+            
+            delegate?.detalheItemViewController(self, acabouDeAdicionar: item)
 
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
-
+        }
+        
     }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return NO if you do not want the item to be re-orderable.
-        return true
+    
+    override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+        return nil
     }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using [segue destinationViewController].
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }

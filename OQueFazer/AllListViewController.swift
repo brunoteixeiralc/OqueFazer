@@ -8,90 +8,198 @@
 
 import UIKit
 
-class AllListViewController: UITableViewController {
+class AllListViewController: UITableViewController,ListDetalheItemViewControllerDelegate,UINavigationControllerDelegate {
 
+    
+    var dataModel: DataModel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        
+        super.viewWillAppear(animated)
+        
+        tableView.reloadData()
+        
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        navigationController?.delegate = self
+        
+        let index = dataModel.indexOfSelectedCheckList
+        
+        if index != -1 {
+            
+            if(index >= 0 && index < dataModel.lists.count){
+            
+                let checklist = dataModel.lists[index]
+                performSegueWithIdentifier("MostrarCheckList", sender: checklist)
+            
+            }
+        }
+    
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
-    // MARK: - Table view data source
-
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        // #warning Potentially incomplete method implementation.
-        // Return the number of sections.
-        return 0
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete method implementation.
-        // Return the number of rows in the section.
-        return 0
+        return dataModel.lists.count
     }
 
-    /*
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("reuseIdentifier", forIndexPath: indexPath) as! UITableViewCell
-
-        // Configure the cell...
+        
+        let cellIdentifier = "Cell"
+        
+        var cell: UITableViewCell! = tableView.dequeueReusableCellWithIdentifier(cellIdentifier) as? UITableViewCell
+        
+        if cell == nil {
+            
+            cell = UITableViewCell(style: .Subtitle, reuseIdentifier: cellIdentifier)
+        }
+        
+        let checklist = dataModel.lists[indexPath.row]
+        
+        cell.imageView!.image = UIImage(named: checklist.iconName)
+        
+        cell.textLabel!.text = checklist.name
+        
+        cell.accessoryType = .DetailDisclosureButton
+        
+        let count =  checklist.countUncheckedItems()
+        
+        if checklist.items.count == 0 {
+            
+            cell.detailTextLabel!.text = "Sem checklist"
+            
+        }else if count == 0{
+            
+            cell.detailTextLabel!.text = "Todos os checklist concluídos"
+        
+        }else{
+            
+            cell.detailTextLabel!.text = "\(count) item(s) não concluídos"
+        }
 
         return cell
     }
-    */
 
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return NO if you do not want the specified item to be editable.
-        return true
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        
+        dataModel.indexOfSelectedCheckList = indexPath.row
+        
+        let checklist = dataModel.lists[indexPath.row]
+        
+        performSegueWithIdentifier("MostrarCheckList", sender: checklist)
     }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            // Delete the row from the data source
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-        } else if editingStyle == .Insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
+    
+    
+     override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+        
+        dataModel.lists.removeAtIndex(indexPath.row)
+        
+        let indexPaths = [indexPath]
+        
+        tableView.deleteRowsAtIndexPaths(indexPaths, withRowAnimation: .Automatic)
+    
     }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
-
+    
+    override func tableView(tableView: UITableView, accessoryButtonTappedForRowWithIndexPath indexPath: NSIndexPath) {
+        
+        let navigationController = storyboard!.instantiateViewControllerWithIdentifier("ListDetalheViewController") as! UINavigationController
+        
+        let controller = navigationController.topViewController as! ListDetalheViewController
+        
+        controller.delegate = self
+        
+        let checklist = dataModel.lists[indexPath.row]
+        
+        controller.itemEditar = checklist
+        
+        presentViewController(navigationController, animated: true, completion: nil)
     }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return NO if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using [segue destinationViewController].
-        // Pass the selected object to the new view controller.
+        
+        if segue.identifier == "MostrarCheckList"{
+            
+            let controller = segue.destinationViewController as! CheckListViewController
+            
+            controller.checklist = sender as! CheckList
+        
+        }else if segue.identifier == "AdicionarCheckList"{
+            
+            let navigationController = segue.destinationViewController as! UINavigationController
+            
+            let controller = navigationController.topViewController as! ListDetalheViewController
+            
+            controller.delegate = self
+            
+            controller.itemEditar = nil
+        }
     }
-    */
-
+    
+    func listdetalheItemViewControllerCancelou(controller: ListDetalheViewController) {
+        dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func listdetalheItemViewController(controller: ListDetalheViewController, acabouDeEditar item: CheckList) {
+        
+//        if let index = find(dataModel.lists, item){
+//            
+//            let indexPath = NSIndexPath(forRow: index, inSection: 0)
+//            
+//            if let cell = tableView.cellForRowAtIndexPath(indexPath){
+//                
+//                cell.textLabel!.text = item.name
+//            }
+//        }
+        
+        dataModel.sortChecklists()
+        
+        tableView.reloadData()
+        
+        dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func listdetalheItemViewController(controller: ListDetalheViewController, acabouDeAdicionar item: CheckList) {
+        
+//        let newIndex = dataModel.lists.count
+//        
+//        dataModel.lists.append(item)
+//        
+//        let indexPath = NSIndexPath(forRow: newIndex, inSection: 0)
+//        
+//        let indexPaths = [indexPath]
+//        
+//        tableView.insertRowsAtIndexPaths(indexPaths, withRowAnimation: .Automatic)
+        
+        
+        dataModel.lists.append(item)
+        
+        dataModel.sortChecklists()
+        
+        tableView.reloadData()
+        
+        dismissViewControllerAnimated(true, completion: nil)
+        
+        
+    }
+    
+    //Delegate navigationcontroller
+    func navigationController(navigationController: UINavigationController, willShowViewController viewController: UIViewController, animated: Bool) {
+        
+        // === verifica se tem referência ao mesmo objeto
+        if viewController === self {
+            dataModel.indexOfSelectedCheckList = -1
+        }
+    }
+    
+    
+    
 }

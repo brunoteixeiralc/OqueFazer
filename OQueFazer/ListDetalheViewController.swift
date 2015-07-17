@@ -8,90 +8,118 @@
 
 import UIKit
 
-class ListDetalheViewController: UITableViewController {
+protocol ListDetalheItemViewControllerDelegate: class{
+    func listdetalheItemViewControllerCancelou(controller:ListDetalheViewController)
+    func listdetalheItemViewController(controller:ListDetalheViewController, acabouDeAdicionar item:CheckList)
+    func listdetalheItemViewController(controller:ListDetalheViewController, acabouDeEditar item:CheckList)
+}
 
+class ListDetalheViewController: UITableViewController,UITextViewDelegate,IconPickerViewControllerDelegate {
+
+    @IBOutlet weak var iconImageView: UIImageView!
+    @IBOutlet weak var campoTexto: UITextField!
+    @IBOutlet weak var botaoConcluir: UIBarButtonItem!
+    var itemEditar : CheckList?
+    weak var delegate: ListDetalheItemViewControllerDelegate?
+    var iconName = "Folder"
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        tableView.rowHeight = 44
+        
+        if let item = itemEditar{
+            
+            title = "Editar Checklist"
+            
+            campoTexto.text = item.name
+            
+            botaoConcluir.enabled = true
+            
+            iconName = item.iconName
+            
+        }
+        
+        iconImageView.image = UIImage(named: iconName)
 
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    override func viewWillAppear(animated: Bool) {
+        
+        super.viewWillAppear(animated)
+        
+        campoTexto.becomeFirstResponder()
+        
     }
-
-    // MARK: - Table view data source
-
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        // #warning Potentially incomplete method implementation.
-        // Return the number of sections.
-        return 0
-    }
-
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete method implementation.
-        // Return the number of rows in the section.
-        return 0
-    }
-
-    /*
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("reuseIdentifier", forIndexPath: indexPath) as! UITableViewCell
-
-        // Configure the cell...
-
-        return cell
-    }
-    */
-
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return NO if you do not want the specified item to be editable.
+    
+    func textField(textField: UITextField, shouldChangeCharactersInRange range: NSRange, replacementString string: String) -> Bool {
+        
+        let oldText:NSString = textField.text
+        
+        let newText:NSString = oldText.stringByReplacingCharactersInRange(range, withString: string)
+        
+        botaoConcluir.enabled = newText.length>0
+        
         return true
     }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
-            // Delete the row from the data source
-            tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-        } else if editingStyle == .Insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
+    
+    @IBAction func cancelar(){
+        
+        delegate?.listdetalheItemViewControllerCancelou(self)
     }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
-
+    
+    @IBAction func concluir(){
+        
+        if let item = itemEditar{
+            
+            item.name = campoTexto.text
+            
+            item.iconName = iconName
+            
+            delegate?.listdetalheItemViewController(self, acabouDeEditar: item)
+            
+        }else{
+            
+            let item = CheckList(name: campoTexto.text, iconName: iconName)
+            
+            delegate?.listdetalheItemViewController(self, acabouDeAdicionar: item)
+            
+        }
+        
     }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-        // Return NO if you do not want the item to be re-orderable.
-        return true
+    
+    override func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+        
+        if indexPath.section == 1{
+            
+            return indexPath
+        
+        }else{
+            
+            return nil
+        }
     }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    
+    
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using [segue destinationViewController].
-        // Pass the selected object to the new view controller.
+        
+        if segue.identifier == "PickIcon" {
+            
+            let controller = segue.destinationViewController as! IconPickerViewController
+            
+            controller.delegate = self
+        }
     }
-    */
+        
+    func iconPicker(picker: IconPickerViewController,didPickIcon iconName: String){
+        
+        self.iconName = iconName
+        
+        iconImageView.image = UIImage(named: iconName)
+        
+        navigationController?.popViewControllerAnimated(true)
+ 
+    }
+    
 
 }
