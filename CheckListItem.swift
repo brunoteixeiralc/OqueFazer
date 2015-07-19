@@ -63,6 +63,16 @@ class CheckListItem: NSObject, NSCoding {
     
     func scheduleNotification(){
         
+        let existingNotification = notificationForThisItem()
+        
+        if let notification = existingNotification{
+            
+            println("Achamos um notificação existente \(notification)")
+            
+            UIApplication.sharedApplication().cancelLocalNotification(notification)
+            
+        }
+        
         if shouldRemind && dueDate.compare(NSDate()) != NSComparisonResult.OrderedAscending {
             
             let localNotification = UILocalNotification()
@@ -78,6 +88,38 @@ class CheckListItem: NSObject, NSCoding {
             UIApplication.sharedApplication().scheduleLocalNotification(localNotification)
             
         }
+        
+    }
+    
+    func notificationForThisItem() -> UILocalNotification? {
+        
+        let allNotification = UIApplication.sharedApplication().scheduledLocalNotifications as! [UILocalNotification]
+        
+        for notification in allNotification {
+            
+            if let number = notification.userInfo?["ItemID"] as? NSNumber {
+                
+                if number.integerValue == itemID {
+                    
+                    return notification
+                }
+            }
+        }
+        
+        return nil
+    }
+    
+    deinit {
+        
+        let existingNotification = notificationForThisItem()
+        
+        if let notification = existingNotification {
+            
+            println("Removendo a notificação \(notification)")
+            
+            UIApplication.sharedApplication().cancelLocalNotification(notification)
+        }
+
         
     }
     
