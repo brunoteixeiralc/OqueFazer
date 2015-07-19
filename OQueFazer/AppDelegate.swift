@@ -52,6 +52,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
        dataModel.salvarCheckList()
     }
+    
+    func application(application: UIApplication, didReceiveLocalNotification notification: UILocalNotification) {
+        println("didReceiveLocalNotification \(notification)")
+    }
 
 
 }
