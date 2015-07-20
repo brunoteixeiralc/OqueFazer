@@ -18,8 +18,8 @@ class IconPickerViewController: UITableViewController {
         
     weak var delegate: IconPickerViewControllerDelegate?
         
-    let icons = [ "No Icon",
-            "Appointments", "Birthdays", "Chores", "Drinks", "Folder", "Groceries", "Inbox","Photos", "Trips"]
+    let icons = [ "Sem Icone",
+            "Compromissos", "Aniversarios", "Tarefas", "Bebidas", "Pastas", "Comidas", "Caixa de entrada","Fotos", "Viagens"]
         
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -33,9 +33,20 @@ class IconPickerViewController: UITableViewController {
         let cell = tableView.dequeueReusableCellWithIdentifier("IconCell") as! UITableViewCell
         
         let iconName = icons[indexPath.row]
+        
+        if iconName == "Aniversarios" {
             
-        cell.textLabel!.text = iconName
+            cell.textLabel!.text = "Aniversários"
             
+        }else if iconName == "Sem Icone"{
+         
+            cell.textLabel!.text = "Sem Ícone"
+            
+        }else{
+            
+             cell.textLabel!.text = iconName
+        }
+
         cell.imageView!.image = UIImage(named: iconName)
         
         return cell

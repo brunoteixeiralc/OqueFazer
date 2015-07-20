@@ -32,7 +32,7 @@ class CheckList: NSObject, NSCoding {
     
     convenience init(name: String) {
         
-        self.init(name: name, iconName: "No Icon")
+        self.init(name: name, iconName: "Sem Icone")
     }
 
     var name = ""
